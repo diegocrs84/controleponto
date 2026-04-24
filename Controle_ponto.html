@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏰ Controle de Ponto</title>`n    <link rel="icon" href="data:image/svg+xml,<svg xmlns=`"http://www.w3.org/2000/svg`" viewBox=`"0 0 100 100`"><text y=`".9em`" font-size=`"90`">⏰</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="time"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: #f9f9f9;
+        }
+
+        input[type="time"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background-color: white;
+        }
+
+        .calculated {
+            background-color: #f0f4ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .exceeded {
+            background-color: #fff0f0;
+            color: #e53e3e;
+            font-weight: 600;
+        }
+
+        .difference {
+            background-color: #f0fff4;
+            color: #38a169;
+            font-weight: 600;
+        }
+
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+        }
+
+        .summary h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .value {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .positive {
+            color: #38a169;
+        }
+
+        .negative {
+            color: #e53e3e;
+        }
+
+        .neutral {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⏰ Controle de Ponto</h1>
+
+        <div class="form-group">
+            <label for="entrada">1 - Hora de Entrada</label>
+            <input type="time" id="entrada" value="08:00">
+        </div>
+
+        <div class="form-group">
+            <label for="inicioAlmoco">2 - Início do Almoço</label>
+            <input type="time" id="inicioAlmoco" value="12:00">
+        </div>
+
+        <div class="form-group">
+            <label for="fimAlmoco">3 - Fim do Almoço</label>
+            <input type="time" id="fimAlmoco" class="calculated" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="saidaPrevista">4 - Saída Prevista</label>
+            <input type="time" id="saidaPrevista" class="calculated" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="saidaReal">5 - Saída Real</label>
+            <input type="time" id="saidaReal" value="17:45">
+        </div>
+
+        <div class="form-group">
+            <label for="totalExcedido">6 - Total Excedido</label>
+            <input type="time" id="totalExcedido" class="exceeded" readonly>
+        </div>
+
+        <div class="summary">
+            <h3>📊 Resumo do Dia</h3>
+            <div class="summary-item">
+                <span class="label">Trabalhado:</span>
+                <span class="value" id="tempoTrabalhado">00:00</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Jornada Prevista:</span>
+                <span class="value" id="jornadaPrevista">08:45</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Diferença:</span>
+                <span class="value" id="diferenca">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constantes em minutos
+        const ALMOCO_DURACAO = 75; // 1 hora e 15 minutos
+        const JORNADA_DIARIA = 525; // 8 horas e 45 minutos (8*60 + 45)
+
+        // Elementos DOM
+        const entradaInput = document.getElementById('entrada');
+        const inicioAlmocoInput = document.getElementById('inicioAlmoco');
+        const fimAlmocoInput = document.getElementById('fimAlmoco');
+        const saidaPrevistaInput = document.getElementById('saidaPrevista');
+        const saidaRealInput = document.getElementById('saidaReal');
+        const totalExcedidoInput = document.getElementById('totalExcedido');
+
+        // Elementos de resumo
+        const tempoTrabalhadoEl = document.getElementById('tempoTrabalhado');
+        const jornadaPrevistaEl = document.getElementById('jornadaPrevista');
+        const diferencaEl = document.getElementById('diferenca');
+
+        // Função para converter string de tempo (HH:MM) para minutos from midnight
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        // Função para converter minutos from midnight para string HH:MM
+        function minutesToTimeString(minutes) {
+            // Ajusta para o dia seguinte se passar de 24h
+            minutes = minutes % (24 * 60);
+            if (minutes < 0) minutes += 24 * 60;
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        }
+
+        // Função para formatar diferença (pode ser negativa)
+        function formatDifference(minutes) {
+            const sign = minutes >= 0 ? '+' : '-';
+            const absMinutes = Math.abs(minutes);
+            const hours = Math.floor(absMinutes / 60);
+            const mins = absMinutes % 60;
+            return `${sign}${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+        }
+
+        // Atualiza todos os cálculos
+        function updateCalculations() {
+            const entrada = entradaInput.value;
+            const inicioAlmoco = inicioAlmocoInput.value;
+            const saidaReal = saidaRealInput.value;
+
+            // 3. Calcula fim do almoço (início + 1h15)
+            if (inicioAlmoco) {
+                const fimAlmocoMin = timeToMinutes(inicioAlmoco) + ALMOCO_DURACAO;
+                fimAlmocoInput.value = minutesToTimeString(fimAlmocoMin);
+            } else {
+                fimAlmocoInput.value = '';
+            }
+
+            // 4. Calcula saída prevista (entrada + 8h45)
+            if (entrada) {
+                const saidaPrevistaMin = timeToMinutes(entrada) + JORNADA_DIARIA + ALMOCO_DURACAO;
+                saidaPrevistaInput.value = minutesToTimeString(saidaPrevistaMin);
+            } else {
+                saidaPrevistaInput.value = '';
+            }
+
+            // 6. Calcula total excedido (saída real - saída prevista)
+            if (entrada && saidaReal) {
+                const entradaMin = timeToMinutes(entrada);
+                const saidaPrevistaMin = timeToMinutes(entrada) + JORNADA_DIARIA + ALMOCO_DURACAO;
+                const saidaRealMin = timeToMinutes(saidaReal);
+                const excedidoMin = saidaRealMin - saidaPrevistaMin;
+                totalExcedidoInput.value = minutesToTimeString(excedidoMin >= 0 ? excedidoMin : 0);
+
+                // Atualiza resumo
+                const tempoTrabalhadoMin = saidaRealMin - entradaMin - ALMOCO_DURACAO;
+                tempoTrabalhadoEl.textContent = minutesToTimeString(tempoTrabalhadoMin);
+
+                // Jornada prevista = 8h45 de trabalho (525 minutos)
+                jornadaPrevistaEl.textContent = minutesToTimeString(JORNADA_DIARIA);
+
+                // Diferença = tempo trabalhado - jornada prevista (8h45)
+                let diferencaMin = tempoTrabalhadoMin - JORNADA_DIARIA;
+                diferencaEl.textContent = formatDifference(diferencaMin);
+                diferencaEl.className = 'value ' + (diferencaMin >= 0 ? 'positive' : 'negative');
+            } else {
+                totalExcedidoInput.value = '00:00';
+                tempoTrabalhadoEl.textContent = '00:00';
+                diferencaEl.textContent = '00:00';
+                diferencaEl.className = 'value neutral';
+            }
+        }
+
+        // Adiciona event listeners
+        entradaInput.addEventListener('change', updateCalculations);
+        inicioAlmocoInput.addEventListener('change', updateCalculations);
+        saidaRealInput.addEventListener('change', updateCalculations);
+
+        // Cálculo inicial
+        updateCalculations();
+    </script>
+</body>
+</html>
+
