@@ -158,7 +158,7 @@
 
         <div class="form-group">
             <label for="saidaReal">5 - Saída Real</label>
-            <input type="time" id="saidaReal" value="17:45">
+            <input type="time" id="saidaReal" value="00:00">
         </div>
 
         <div class="form-group">
@@ -250,7 +250,7 @@
             }
 
             // 6. Calcula total excedido (saída real - saída prevista)
-            if (entrada && saidaReal) {
+            if (entrada && saidaReal && saidaReal !== '00:00') {
                 const entradaMin = timeToMinutes(entrada);
                 const saidaPrevistaMin = timeToMinutes(entrada) + JORNADA_DIARIA + ALMOCO_DURACAO;
                 const saidaRealMin = timeToMinutes(saidaReal);
