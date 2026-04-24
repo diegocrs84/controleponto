@@ -130,40 +130,225 @@
         .neutral {
             color: #667eea;
         }
+
+        /* Mobile First - Responsivo */
+        @media (min-width: 481px) {
+            .container {
+                max-width: 600px;
+                padding: 50px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .container {
+                max-width: 700px;
+                padding: 60px;
+            }
+
+            h1 {
+                font-size: 36px;
+                margin-bottom: 40px;
+            }
+
+            .form-group {
+                margin-bottom: 25px;
+            }
+
+            label {
+                font-size: 15px;
+            }
+
+            input[type="time"] {
+                padding: 14px 18px;
+                font-size: 17px;
+            }
+
+            .summary {
+                margin-top: 40px;
+                padding: 25px;
+            }
+
+            .summary h3 {
+                font-size: 20px;
+            }
+
+            .summary-item {
+                padding: 10px 0;
+            }
+
+            .label {
+                font-size: 15px;
+            }
+
+            .value {
+                font-size: 18px;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .container {
+                max-width: 800px;
+                padding: 70px;
+            }
+
+            .form-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .form-row .form-group:last-child {
+                grid-column: span 2;
+            }
+
+            h1 {
+                font-size: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 25px 20px;
+                border-radius: 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            label {
+                font-size: 13px;
+                margin-bottom: 6px;
+            }
+
+            input[type="time"] {
+                padding: 10px 12px;
+                font-size: 15px;
+            }
+
+            .summary {
+                margin-top: 20px;
+                padding: 15px;
+            }
+
+            .summary h3 {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+
+            .summary-item {
+                margin-bottom: 8px;
+                padding: 6px 0;
+            }
+
+            .label {
+                font-size: 13px;
+            }
+
+            .value {
+                font-size: 14px;
+            }
+        }
+
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+        }
+
+        .summary h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .value {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .positive {
+            color: #38a169;
+        }
+
+        .negative {
+            color: #e53e3e;
+        }
+
+        .neutral {
+            color: #667eea;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>⏰ Controle de Ponto</h1>
 
-        <div class="form-group">
-            <label for="entrada">1 - Hora de Entrada</label>
-            <input type="time" id="entrada" value="08:00">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="entrada">1 - Hora de Entrada</label>
+                <input type="time" id="entrada" value="08:00">
+            </div>
+
+            <div class="form-group">
+                <label for="inicioAlmoco">2 - Início do Almoço</label>
+                <input type="time" id="inicioAlmoco" value="12:00">
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="inicioAlmoco">2 - Início do Almoço</label>
-            <input type="time" id="inicioAlmoco" value="12:00">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="fimAlmoco">3 - Fim do Almoço</label>
+                <input type="time" id="fimAlmoco" class="calculated" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="saidaPrevista">4 - Saída Prevista</label>
+                <input type="time" id="saidaPrevista" class="calculated" readonly>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="fimAlmoco">3 - Fim do Almoço</label>
-            <input type="time" id="fimAlmoco" class="calculated" readonly>
-        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="saidaReal">5 - Saída Real</label>
+                <input type="time" id="saidaReal" value="00:00">
+            </div>
 
-        <div class="form-group">
-            <label for="saidaPrevista">4 - Saída Prevista</label>
-            <input type="time" id="saidaPrevista" class="calculated" readonly>
-        </div>
-
-        <div class="form-group">
-            <label for="saidaReal">5 - Saída Real</label>
-            <input type="time" id="saidaReal" value="00:00">
-        </div>
-
-        <div class="form-group">
-            <label for="totalExcedido">6 - Total Excedido</label>
-            <input type="time" id="totalExcedido" class="exceeded" readonly>
+            <div class="form-group">
+                <label for="totalExcedido">6 - Total Excedido</label>
+                <input type="time" id="totalExcedido" class="exceeded" readonly>
+            </div>
         </div>
 
         <div class="summary">
