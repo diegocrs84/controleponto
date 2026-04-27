@@ -219,6 +219,18 @@
             color: #667eea;
         }
 
+        /* Mobile portrait fix - adjust when keyboard is visible */
+        @media (max-height: 600px) and (orientation: portrait) {
+            body {
+                align-items: flex-start;
+                padding: 10px;
+            }
+            .container {
+                margin-top: 0;
+                padding: 16px;
+            }
+        }
+
         /* Mobile landscape fix */
         @media (max-height: 500px) and (orientation: landscape) {
             body {
