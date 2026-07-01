@@ -58,21 +58,11 @@
             transition: border-color 0.3s, box-shadow 0.3s;
             background-color: #f9f9f9;
             min-height: 48px;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3e%3c/rect%3e%3cline x1='16' y1='2' x2='16' y2='6'%3e%3c/line%3e%3cline x1='8' y1='2' x2='8' y2='6'%3e%3c/line%3e%3cline x1='3' y1='10' x2='21' y2='10'%3e%3c/line%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 18px;
-            cursor: pointer;
+            color-scheme: light;
+            cursor: text;
         }
 
         input[type="time"]::-webkit-calendar-picker-indicator {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
             cursor: pointer;
         }
 
@@ -89,6 +79,27 @@
 
         input[type="time"]:hover {
             border-color: #667eea;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            input[type="time"] {
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3e%3c/rect%3e%3cline x1='16' y1='2' x2='16' y2='6'%3e%3c/line%3e%3cline x1='8' y1='2' x2='8' y2='6'%3e%3c/line%3e%3cline x1='3' y1='10' x2='21' y2='10'%3e%3c/line%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 12px center;
+                background-size: 18px;
+                cursor: pointer;
+                padding-right: 42px;
+            }
+
+            input[type="time"]::-webkit-calendar-picker-indicator {
+                position: absolute;
+                opacity: 0;
+                width: 100%;
+                height: 100%;
+            }
         }
 
         /* Estilos específicos para mobile - time picker */
@@ -309,7 +320,7 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="fimAlmoco">3 - Fim do Almoço</label>
-                <input type="time" id="fimAlmoco" class="calculated" readonly inputmode="none">
+                <input type="time" id="fimAlmoco" inputmode="none">
             </div>
 
             <div class="form-group">
@@ -365,6 +376,9 @@
         const jornadaPrevistaEl = document.getElementById('jornadaPrevista');
         const diferencaEl = document.getElementById('diferenca');
 
+        // Flag para controlar se Fim do Almoço foi editado manualmente
+        let fimAlmocoEditadoManualmente = false;
+
         // Função para converter string de tempo (HH:MM) para minutos from midnight
         function timeToMinutes(timeStr) {
             if (!timeStr) return 0;
@@ -391,32 +405,45 @@
             return `${sign}${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
         }
 
+        // Função para recalcular apenas a Saída Prevista baseada no Fim do Almoço
+        function recalculaSaidaPrevista() {
+            const entrada = entradaInput.value;
+            const fimAlmoco = fimAlmocoInput.value;
+
+            if (entrada && fimAlmoco) {
+                const entradaMin = timeToMinutes(entrada);
+                const fimAlmocoMin = timeToMinutes(fimAlmoco);
+                // A saída prevista é calculada como: fim do almoço + tempo de trabalho restante
+                // Tempo total de trabalho é 8h45 (525 minutos)
+                const tempoAntes = fimAlmocoMin - entradaMin;
+                const tempoDepois = JORNADA_DIARIA - tempoAntes;
+                const saidaPrevistaMin = fimAlmocoMin + tempoDepois;
+                saidaPrevistaInput.value = minutesToTimeString(saidaPrevistaMin);
+            }
+        }
+
         // Atualiza todos os cálculos
         function updateCalculations() {
             const entrada = entradaInput.value;
             const inicioAlmoco = inicioAlmocoInput.value;
             const saidaReal = saidaRealInput.value;
 
-            // 3. Calcula fim do almoço (início + 1h15)
-            if (inicioAlmoco) {
+            // 3. Calcula fim do almoço (início + 1h15) - SOMENTE se não foi editado manualmente
+            if (inicioAlmoco && !fimAlmocoEditadoManualmente) {
                 const fimAlmocoMin = timeToMinutes(inicioAlmoco) + ALMOCO_DURACAO;
                 fimAlmocoInput.value = minutesToTimeString(fimAlmocoMin);
-            } else {
-                fimAlmocoInput.value = '';
             }
 
             // 4. Calcula saída prevista (entrada + 8h45)
-            if (entrada) {
+            if (entrada && !fimAlmocoEditadoManualmente) {
                 const saidaPrevistaMin = timeToMinutes(entrada) + JORNADA_DIARIA + ALMOCO_DURACAO;
                 saidaPrevistaInput.value = minutesToTimeString(saidaPrevistaMin);
-            } else {
-                saidaPrevistaInput.value = '';
             }
 
             // 6. Calcula total excedido (saída real - saída prevista)
             if (entrada && saidaReal && saidaReal !== '00:00') {
                 const entradaMin = timeToMinutes(entrada);
-                const saidaPrevistaMin = timeToMinutes(entrada) + JORNADA_DIARIA + ALMOCO_DURACAO;
+                const saidaPrevistaMin = timeToMinutes(saidaPrevistaInput.value);
                 const saidaRealMin = timeToMinutes(saidaReal);
                 const excedidoMin = saidaRealMin - saidaPrevistaMin;
                 totalExcedidoInput.value = minutesToTimeString(excedidoMin >= 0 ? excedidoMin : 0);
@@ -441,9 +468,24 @@
         }
 
         // Adiciona event listeners
-        entradaInput.addEventListener('change', updateCalculations);
-        inicioAlmocoInput.addEventListener('change', updateCalculations);
+        entradaInput.addEventListener('change', function() {
+            fimAlmocoEditadoManualmente = false; // Reset ao editar entrada
+            updateCalculations();
+        });
+
+        inicioAlmocoInput.addEventListener('change', function() {
+            fimAlmocoEditadoManualmente = false; // Reset ao editar início do almoço
+            updateCalculations();
+        });
+
         saidaRealInput.addEventListener('change', updateCalculations);
+
+        // Event listener específico para Fim do Almoço - marca como editado manualmente e recalcula Saída Prevista
+        fimAlmocoInput.addEventListener('change', function() {
+            fimAlmocoEditadoManualmente = !!fimAlmocoInput.value; // Marca como editado se tem valor
+            recalculaSaidaPrevista();
+            updateCalculations();
+        });
 
         // Cálculo inicial
         updateCalculations();
