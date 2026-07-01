@@ -408,15 +408,19 @@
         // Função para recalcular apenas a Saída Prevista baseada no Fim do Almoço
         function recalculaSaidaPrevista() {
             const entrada = entradaInput.value;
+            const inicioAlmoco = inicioAlmocoInput.value;
             const fimAlmoco = fimAlmocoInput.value;
 
-            if (entrada && fimAlmoco) {
+            if (entrada && inicioAlmoco && fimAlmoco) {
                 const entradaMin = timeToMinutes(entrada);
+                const inicioAlmocoMin = timeToMinutes(inicioAlmoco);
                 const fimAlmocoMin = timeToMinutes(fimAlmoco);
-                // A saída prevista é calculada como: fim do almoço + tempo de trabalho restante
-                // Tempo total de trabalho é 8h45 (525 minutos)
-                const tempoAntes = fimAlmocoMin - entradaMin;
+                
+                // Tempo de trabalho antes do almoço
+                const tempoAntes = inicioAlmocoMin - entradaMin;
+                // Tempo de trabalho depois do almoço (jornada total 8h45 - tempo antes)
                 const tempoDepois = JORNADA_DIARIA - tempoAntes;
+                // Saída prevista = fim do almoço + tempo de trabalho depois
                 const saidaPrevistaMin = fimAlmocoMin + tempoDepois;
                 saidaPrevistaInput.value = minutesToTimeString(saidaPrevistaMin);
             }
